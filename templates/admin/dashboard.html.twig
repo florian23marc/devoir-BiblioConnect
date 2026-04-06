@@ -1,0 +1,192 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Administration{% endblock %}
+
+{% block body %}
+    <h1>Tableau de bord administrateur</h1>
+
+    <div class="row mb-4">
+        <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6 mb-3">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Livres totaux</h5>
+                    <p class="card-text display-4">{{ totalBooks }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6 mb-3">
+            <div class="card text-center bg-warning h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Stock faible</h5>
+                    <p class="card-text display-4">{{ lowStockBooks|length }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6 mb-3">
+            <div class="card text-center bg-info h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Réservations en attente</h5>
+                    <p class="card-text display-4">{{ pendingReservations }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6 mb-3">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Utilisateurs</h5>
+                    <p class="card-text display-4">{{ users|length }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6 mb-3">
+            <div class="card text-center bg-success h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Livres empruntés</h5>
+                    <p class="card-text display-4">{{ activeReservations }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <h2>Gestion du catalogue</h2>
+    <div class="btn-group mb-4" role="group">
+        <a href="{{ path('app_book_index') }}" class="btn btn-primary">Voir les livres</a>
+        <a href="{{ path('app_book_new') }}" class="btn btn-success">Ajouter un livre</a>
+        <a href="{{ path('app_admin_category_index') }}" class="btn btn-info">Catégories</a>
+        <a href="{{ path('app_admin_language_index') }}" class="btn btn-info">Langues</a>
+    </div>
+
+    <h2>Stocks faibles</h2>
+    {% if lowStockBooks %}
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Titre</th>
+                        <th>Auteur</th>
+                        <th>Stock</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for book in lowStockBooks %}
+                        <tr>
+                            <td>{{ book.title }}</td>
+                            <td>{{ book.author }}</td>
+                            <td><span class="badge bg-warning">{{ book.stock }}</span></td>
+                            <td>
+                                <a href="{{ path('app_book_edit', {'id': book.id}) }}" class="btn btn-sm btn-warning">Éditer</a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <p class="alert alert-success">Tous les livres ont un bon stock</p>
+    {% endif %}
+
+    <h2>Réservations</h2>
+    {% for reservation in reservations %}
+        <div class="card mb-2 {% if reservation.status == 'active' and reservation.dueDate and date('now') > reservation.dueDate %}border-danger{% endif %}">
+            <div class="card-body">
+                <h5 class="card-title">{{ reservation.book.title }}{% if reservation.status == 'active' and reservation.dueDate and date('now') > reservation.dueDate %} <span class="badge bg-danger">En retard</span>{% endif %}</h5>
+                <p>Utilisateur: {{ reservation.user.firstName }} {{ reservation.user.lastName }}</p>
+                <p>Statut: 
+                    {% if reservation.status == 'pending' %}
+                        <span class="badge bg-warning">En attente</span>
+                    {% elseif reservation.status == 'active' %}
+                        <span class="badge bg-success">Actif</span>
+                    {% elseif reservation.status == 'returned' %}
+                        <span class="badge bg-info">Retourné</span>
+                    {% else %}
+                        <span class="badge bg-danger">{{ reservation.status }}</span>
+                    {% endif %}
+                </p>
+                <p>Réservé le: {{ reservation.reservedAt|date('d/m/Y') }}</p>
+                {% if reservation.startDate %}
+                    <p>Début: {{ reservation.startDate|date('d/m/Y H:i') }}</p>
+                {% endif %}
+                {% if reservation.endDate %}
+                    <p>Fin: {{ reservation.endDate|date('d/m/Y H:i') }}</p>
+                {% endif %}
+                {% if reservation.dueDate %}
+                    <p>Retour prévu: {{ reservation.dueDate|date('d/m/Y H:i') }}</p>
+                {% endif %}
+                {% if reservation.status == 'pending' %}
+                    <form method="post" action="{{ path('app_admin_reservation_approve', {'id': reservation.id}) }}" style="display: inline;">
+                        <input type="hidden" name="_token" value="{{ csrf_token('approve' ~ reservation.id) }}">
+                        <button class="btn btn-success btn-sm">Approuver</button>
+                    </form>
+                    <form method="post" action="{{ path('app_admin_reservation_reject', {'id': reservation.id}) }}" style="display: inline;">
+                        <input type="hidden" name="_token" value="{{ csrf_token('reject' ~ reservation.id) }}">
+                        <button class="btn btn-danger btn-sm">Rejeter</button>
+                    </form>
+                {% elseif reservation.status == 'active' %}
+                    <form method="post" action="{{ path('app_admin_reservation_return', {'id': reservation.id}) }}" style="display: inline;">
+                        <input type="hidden" name="_token" value="{{ csrf_token('return' ~ reservation.id) }}">
+                        <button class="btn btn-warning btn-sm">Retourner</button>
+                    </form>
+                {% endif %}
+            </div>
+        </div>
+    {% endfor %}
+
+    <h2>Gestion des utilisateurs</h2>
+    {% set roleLabels = {
+        'ROLE_USER': 'Usager',
+        'ROLE_LIBRARIAN': 'Bibliothécaire',
+        'ROLE_ADMIN': 'Administrateur',
+    } %}
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Nom</th>
+                    <th>Email</th>
+                    <th>Rôles</th>
+                    <th>Mot de passe (hashé)</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                    <tr>
+                        <td>{{ user.firstName }} {{ user.lastName }}</td>
+                        <td>{{ user.email }}</td>
+                        <td>
+                            {% for role in user.roles %}
+                                <span class="badge bg-secondary">{{ roleLabels[role] ?? role }}</span>
+                            {% endfor %}
+                        </td>
+                        <td><small class="text-muted">{{ user.password }}</small></td>
+                        <td>
+                            <a href="{{ path('app_admin_user_roles', {'id': user.id}) }}" class="btn btn-primary btn-sm">Modifier rôles</a>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <h2>Modération des avis</h2>
+    {% if reviews %}
+        {% for review in reviews %}
+            <div class="card mb-2">
+                <div class="card-body">
+                    <h5 class="card-title">{{ review.book.title }}</h5>
+                    <p><strong>Utilisateur:</strong> {{ review.user.firstName }} {{ review.user.lastName }}</p>
+                    <p><strong>Note:</strong> <span class="badge bg-info">{{ review.rating }}/5 ⭐</span></p>
+                    <p><strong>Avis:</strong> {{ review.comment }}</p>
+                    <p><small class="text-muted">Ajouté le: {{ review.createdAt|date('d/m/Y H:i') }}</small></p>
+                    <form method="post" action="{{ path('app_review_delete', {'id': review.id}) }}" onsubmit="return confirm('Supprimer cet avis ?')" style="display: inline;">
+                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ review.id) }}">
+                        <button class="btn btn-danger btn-sm">Supprimer</button>
+                    </form>
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <p class="alert alert-info">Aucun avis à modérer</p>
+    {% endif %}
+{% endblock %}

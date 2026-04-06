@@ -1,0 +1,22 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Hello ArticleController!{% endblock %}
+
+{% block body %}
+
+    {{ form_start(form) }}
+        <div>{{ form_label(form.title)}}</div>
+        <div>{{ form_widget(form.title)}}</div>
+
+        <div>{{ form_label(form.description)}}</div>
+        <div>{{ form_widget(form.description)}}</div>
+
+        <div>{ form_label(form.created)}}</div>
+        <div>{{ form_widget(form.created)}}</div>
+
+    <button class="btn">Enregistrer</button>
+
+
+    {{ form_end(form) }}
+
+{% endblock %}

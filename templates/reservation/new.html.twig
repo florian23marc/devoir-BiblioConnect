@@ -1,0 +1,266 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Réserver un livre - {{ reservation.book.title }}{% endblock %}
+
+{% block body %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-lg">
+                <div class="card-header bg-primary text-white">
+                    <h1 class="h4 mb-0">
+                        <i class="fas fa-calendar-plus"></i>
+                        Réserver un livre
+                    </h1>
+                </div>
+
+                <div class="card-body">
+                    <!-- Informations du livre -->
+                    <div class="book-info mb-4 p-3 bg-light rounded">
+                        <div class="row">
+                            <div class="col-md-3 text-center">
+                                {% if reservation.book.image %}
+                                    <img src="{{ asset('uploads/images/' ~ reservation.book.image) }}"
+                                         alt="{{ reservation.book.title }}"
+                                         class="img-fluid rounded shadow-sm"
+                                         style="max-height: 150px;">
+                                {% else %}
+                                    <div class="bg-secondary text-white d-flex align-items-center justify-content-center rounded"
+                                         style="height: 150px; width: 100px; margin: 0 auto;">
+                                        <i class="fas fa-book fa-3x"></i>
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-9">
+                                <h3 class="text-primary">{{ reservation.book.title }}</h3>
+                                <p class="mb-1"><strong>Auteur :</strong> {{ reservation.book.author }}</p>
+                                <p class="mb-1"><strong>Stock disponible :</strong>
+                                    <span class="badge bg-success">{{ availableStock }} exemplaire(s)</span>
+                                </p>
+                                {% if reservation.book.description %}
+                                    <p class="mb-0 text-muted small">{{ reservation.book.description|slice(0, 150) }}...</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Informations importantes -->
+                    <div class="alert alert-info">
+                        <h6><i class="fas fa-info-circle"></i> Informations importantes</h6>
+                        <ul class="mb-0">
+                            <li>La durée maximale d'emprunt est de <strong>30 jours</strong></li>
+                            <li>Vous ne pouvez pas emprunter un livre déjà réservé par quelqu'un d'autre</li>
+                            <li>Les dates doivent être dans le futur</li>
+                            <li>La date de retour prévue est optionnelle mais recommandée</li>
+                        </ul>
+                    </div>
+
+                    <!-- Formulaire -->
+                    {{ form_start(form, {'attr': {'class': 'needs-validation', 'novalidate': 'novalidate'}}) }}
+
+                        {% if not form.vars.valid %}
+                        <!-- Modal d'erreur -->
+                        <div class="modal fade" id="errorModal" tabindex="-1" aria-labelledby="errorModalLabel" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered">
+                                <div class="modal-content border-danger">
+                                    <div class="modal-header bg-danger text-white">
+                                        <h5 class="modal-title" id="errorModalLabel">
+                                            <i class="fas fa-exclamation-triangle"></i>
+                                            Erreur de validation
+                                        </h5>
+                                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <p class="mb-3">Veuillez corriger les erreurs suivantes avant de continuer :</p>
+                                        <ul class="list-unstyled">
+                                            {% for child in form.children %}
+                                                {% if child.vars.errors is defined and child.vars.errors|length > 0 %}
+                                                    <li class="mb-2">
+                                                        <i class="fas fa-times-circle text-danger me-2"></i>
+                                                        <strong>{{ child.vars.label|default(child.vars.name) }} :</strong>
+                                                        {% for error in child.vars.errors %}
+                                                            {{ error.message }}
+                                                        {% endfor %}
+                                                    </li>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </ul>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                            <i class="fas fa-edit"></i> Corriger
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ form_label(form.startDate, null, {'label_attr': {'class': 'form-label fw-bold'}}) }}
+                                {{ form_widget(form.startDate, {'attr': {'class': form.vars.valid ? 'form-control is-valid' : 'form-control'}}) }}
+                                {{ form_help(form.startDate) }}
+                                <div class="invalid-feedback">
+                                    {{ form_errors(form.startDate) }}
+                                </div>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                {{ form_label(form.endDate, null, {'label_attr': {'class': 'form-label fw-bold'}}) }}
+                                {{ form_widget(form.endDate, {'attr': {'class': form.vars.valid ? 'form-control is-valid' : 'form-control'}}) }}
+                                {{ form_help(form.endDate) }}
+                                <div class="invalid-feedback">
+                                    {{ form_errors(form.endDate) }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            {{ form_label(form.dueDate, null, {'label_attr': {'class': 'form-label fw-bold'}}) }}
+                            {{ form_widget(form.dueDate, {'attr': {'class': form.vars.valid ? 'form-control is-valid' : 'form-control'}}) }}
+                            {{ form_help(form.dueDate) }}
+                            <div class="invalid-feedback">
+                                {{ form_errors(form.dueDate) }}
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{{ path('app_book_show', {'id': reservation.book.id}) }}"
+                               class="btn btn-outline-secondary me-md-2">
+                                <i class="fas fa-arrow-left"></i> Retour au livre
+                            </a>
+                            {{ form_widget(form.submit) }}
+                        </div>
+
+                    {{ form_end(form) }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.book-info {
+    border-left: 4px solid #007bff;
+}
+
+.card-header {
+    border-bottom: none;
+}
+
+.form-control:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.btn-success:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    transition: all 0.2s;
+}
+
+.alert-info {
+    border-left: 4px solid #17a2b8;
+}
+</style>
+
+<script>
+// Validation côté client pour améliorer l'expérience utilisateur
+document.addEventListener('DOMContentLoaded', function() {
+    const startDateInput = document.querySelector('[name*="startDate"]');
+    const endDateInput = document.querySelector('[name*="endDate"]');
+    const dueDateInput = document.querySelector('[name*="dueDate"]');
+
+    function updateMinDates() {
+        if (startDateInput && startDateInput.value) {
+            const startDate = new Date(startDateInput.value);
+            const minEndDate = new Date(startDate.getTime() + (2 * 60 * 60 * 1000)); // +2 heures
+            endDateInput.min = minEndDate.toISOString().slice(0, 16);
+
+            if (dueDateInput) {
+                const minDueDate = new Date(startDate.getTime() + (24 * 60 * 60 * 1000)); // +1 jour
+                dueDateInput.min = minDueDate.toISOString().slice(0, 16);
+            }
+        }
+
+        if (endDateInput && endDateInput.value && dueDateInput) {
+            const endDate = new Date(endDateInput.value);
+            const minDueDate = new Date(endDate.getTime() + (60 * 60 * 1000)); // +1 heure
+            dueDateInput.min = minDueDate.toISOString().slice(0, 16);
+        }
+    }
+
+    startDateInput.addEventListener('change', updateMinDates);
+    endDateInput.addEventListener('change', updateMinDates);
+
+    // Initialisation
+    updateMinDates();
+
+    // Afficher automatiquement la modal d'erreur si elle existe
+    const errorModal = document.getElementById('errorModal');
+    if (errorModal) {
+        const modal = new bootstrap.Modal(errorModal, {
+            backdrop: 'static',
+            keyboard: false
+        });
+        modal.show();
+    }
+
+    // Validation en temps réel des dates
+    function validateDates() {
+        const startDate = startDateInput ? new Date(startDateInput.value) : null;
+        const endDate = endDateInput ? new Date(endDateInput.value) : null;
+        const dueDate = dueDateInput ? new Date(dueDateInput.value) : null;
+        const now = new Date();
+
+        // Réinitialiser les classes d'erreur
+        [startDateInput, endDateInput, dueDateInput].forEach(input => {
+            if (input) {
+                input.classList.remove('is-invalid');
+            }
+        });
+
+        let hasErrors = false;
+
+        // Validation de la date de début
+        if (startDate && startDate <= now) {
+            startDateInput.classList.add('is-invalid');
+            hasErrors = true;
+        }
+
+        // Validation de la date de fin
+        if (startDate && endDate && endDate <= startDate) {
+            endDateInput.classList.add('is-invalid');
+            hasErrors = true;
+        }
+
+        // Validation de la durée maximale (30 jours)
+        if (startDate && endDate) {
+            const diffTime = Math.abs(endDate - startDate);
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            if (diffDays > 30) {
+                endDateInput.classList.add('is-invalid');
+                hasErrors = true;
+            }
+        }
+
+        // Validation de la date de retour
+        if (endDate && dueDate && dueDate <= endDate) {
+            dueDateInput.classList.add('is-invalid');
+            hasErrors = true;
+        }
+
+        return !hasErrors;
+    }
+
+    // Écouter les changements sur tous les champs de date
+    [startDateInput, endDateInput, dueDateInput].forEach(input => {
+        if (input) {
+            input.addEventListener('change', validateDates);
+            input.addEventListener('input', validateDates);
+        }
+    });
+});
+</script>
+{% endblock %}

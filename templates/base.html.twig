@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="fr">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>{% block title %}BiblioConnect - Bibliothèque Numérique{% endblock %}</title>
+        <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>📚</text></svg>">
+        {% block stylesheets %}
+            <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+            <style>
+                :root {
+                    --bs-primary: #2563eb;
+                    --bs-primary-rgb: 37, 99, 235;
+                    --bs-secondary: #1e40af;
+                    --bs-success: #10b981;
+                    --bs-danger: #ef4444;
+                    --bs-warning: #f59e0b;
+                }
+
+                * {
+                    margin: 0;
+                    padding: 0;
+                    box-sizing: border-box;
+                }
+
+                body {
+                    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+                    min-height: 100vh;
+                    display: flex;
+                    flex-direction: column;
+                    color: #333;
+                }
+
+                main {
+                    flex: 1;
+                }
+
+                /* Navbar */
+                .navbar {
+                    background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+                    box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+                    padding: 1rem 0;
+                }
+
+                .navbar-brand {
+                    font-size: 1.8rem;
+                    font-weight: 800;
+                    color: white !important;
+                    letter-spacing: 0.5px;
+                }
+
+                .navbar-brand i {
+                    margin-right: 0.5rem;
+                }
+
+                .nav-link {
+                    color: rgba(255, 255, 255, 0.85) !important;
+                    margin: 0 0.75rem;
+                    font-weight: 500;
+                    transition: all 0.3s ease;
+                }
+
+                .nav-link:hover {
+                    color: white !important;
+                    text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+                }
+
+                .navbar-text {
+                    color: white;
+                    font-weight: 600;
+                }
+
+                /* Container */
+                .container {
+                    max-width: 1200px;
+                }
+
+                /* Cards */
+                .card {
+                    border: none;
+                    border-radius: 15px;
+                    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+                    transition: all 0.3s ease;
+                    overflow: hidden;
+                }
+
+                .card:hover {
+                    transform: translateY(-8px);
+                    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+                }
+
+                .card-header {
+                    background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+                    color: white;
+                    border: none;
+                    font-weight: 600;
+                    padding: 1.5rem;
+                }
+
+                /* Buttons */
+                .btn {
+                    border-radius: 8px;
+                    font-weight: 600;
+                    padding: 0.65rem 1.5rem;
+                    transition: all 0.3s ease;
+                }
+
+                .btn-primary {
+                    background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+                    border: none;
+                }
+
+                .btn-primary:hover {
+                    background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%);
+                    transform: translateY(-2px);
+                    box-shadow: 0 8px 20px rgba(37, 99, 235, 0.3);
+                }
+
+                .btn-success {
+                    background: #10b981;
+                }
+
+                .btn-success:hover {
+                    background: #059669;
+                    transform: translateY(-2px);
+                }
+
+                .btn-danger:hover {
+                    transform: translateY(-2px);
+                }
+
+                /* Forms */
+                .form-control, .form-select {
+                    border-radius: 8px;
+                    border: 2px solid #e5e7eb;
+                    padding: 0.75rem;
+                    transition: all 0.3s ease;
+                }
+
+                .form-control:focus, .form-select:focus {
+                    border-color: #2563eb;
+                    box-shadow: 0 0 0 0.2rem rgba(37, 99, 235, 0.15);
+                }
+
+                .form-label {
+                    font-weight: 600;
+                    color: #1f2937;
+                    margin-bottom: 0.5rem;
+                }
+
+                /* Footer */
+                footer {
+                    background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+                    color: white;
+                    padding: 3rem 0 0;
+                    margin-top: 3rem;
+                    text-align: center;
+                }
+
+                footer p {
+                    margin: 0;
+                    opacity: 0.9;
+                }
+
+                /* Headings */
+                h1, h2, h3, h4, h5, h6 {
+                    color: #1f2937;
+                    font-weight: 700;
+                }
+
+                h1 {
+                    font-size: 2.5rem;
+                    margin-bottom: 1.5rem;
+                }
+
+                /* Badges */
+                .badge {
+                    padding: 0.5rem 1rem;
+                    font-weight: 600;
+                }
+
+                /* Alert */
+                .alert {
+                    border-radius: 10px;
+                    border: none;
+                }
+            </style>
+        {% endblock %}
+
+        {% block javascripts %}
+            {% block importmap %}{{ importmap('app') }}{% endblock %}
+        {% endblock %}
+
+        {% set frankenphpHotReload = app.request.server.get('FRANKENPHP_HOT_RELOAD') %}
+        {% if frankenphpHotReload %}
+        <meta name="frankenphp-hot-reload:url" content="{{ frankenphpHotReload }}">
+        <script src="https://cdn.jsdelivr.net/npm/idiomorph"></script>
+        <script src="https://cdn.jsdelivr.net/npm/frankenphp-hot-reload/+esm" type="module"></script>
+        {% endif %}
+    </head>
+    <body>
+        <nav class="navbar navbar-expand-lg">
+            <div class="container">
+                <a class="navbar-brand" href="{{ path('app_home') }}">
+                    <i class="fas fa-book-open"></i>BiblioConnect
+                </a>
+                <button class="navbar-toggler bg-light" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <div class="navbar-nav ms-auto">
+                        <a class="nav-link" href="{{ path('app_book_index') }}">
+                            <i class="fas fa-search"></i> Catalogues
+                        </a>
+                        {% if app.user %}
+                            <span class="navbar-text">Hello {{ app.user.firstName }}!</span>
+                            <a class="nav-link" href="{{ path('app_profile') }}">
+                                <i class="fas fa-user"></i> Profile
+                            </a>
+                            {% if is_granted('ROLE_ADMIN') %}
+                                <a class="nav-link" href="{{ path('app_admin_dashboard') }}">
+                                    <i class="fas fa-crown"></i> Admin
+                                </a>
+                            {% elseif is_granted('ROLE_LIBRARIAN') %}
+                                <a class="nav-link" href="{{ path('app_librarian_dashboard') }}">
+                                    <i class="fas fa-chart-line"></i> Librarian
+                                </a>
+                            {% endif %}
+                            <a class="nav-link" href="{{ path('app_logout') }}">
+                                <i class="fas fa-sign-out-alt"></i> Logout
+                            </a>
+                        {% else %}
+                            <a class="nav-link" href="{{ path('app_register') }}">
+                                <i class="fas fa-user-plus"></i> Register
+                            </a>
+                            <a class="nav-link" href="{{ path('app_login') }}">
+                                <i class="fas fa-sign-in-alt"></i> Login
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <main class="py-4">
+            <div class="container">
+                {% block body %}
+
+                {% endblock %}
+            </div>
+        </main>
+
+        <footer>
+            <div class="container py-5">
+                <p>&copy; 2025 BiblioConnect - Votre bibliothèque numérique</p>
+                <p style="font-size: 0.9rem; margin-top: 0.5rem;">Made with <i class="fas fa-heart" style="color: #ef4444;"></i> for book lovers</p>
+            </div>
+        </footer>
+
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    </body>
+</html>

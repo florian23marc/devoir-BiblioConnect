@@ -1,0 +1,55 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mon profil{% endblock %}
+
+{% block body %}
+    <h1>Mon profil</h1>
+
+    <div class="row">
+        <div class="col-md-6">
+            <h2>Mes réservations</h2>
+            {% for reservation in user.reservations %}
+                <div class="card mb-2">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ reservation.book.title }}</h5>
+                        <p>Statut: {{ reservation.status }}</p>
+                        <p>Réservé le: {{ reservation.reservedAt|date('d/m/Y') }}</p>
+                        {% if reservation.dueDate %}
+                            <p>À rendre le: {{ reservation.dueDate|date('d/m/Y') }}</p>
+                        {% endif %}
+                        {% if reservation.status == 'pending' %}
+                            <form method="post" action="{{ path('app_reservation_cancel', {'id': reservation.id}) }}" style="display: inline;">
+                                <input type="hidden" name="_token" value="{{ csrf_token('cancel' ~ reservation.id) }}">
+                                <button class="btn btn-danger btn-sm">Annuler</button>
+                            </form>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        <div class="col-md-6">
+            <h2>Mes favoris</h2>
+            {% for favorite in user.favorites %}
+                <div class="card mb-2">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ favorite.book.title }}</h5>
+                        <p>Auteur: {{ favorite.book.author }}</p>
+                        <a href="{{ path('app_book_show', {'id': favorite.book.id}) }}" class="btn btn-primary btn-sm">Voir</a>
+                        <a href="{{ path('app_favorite_toggle', {'book': favorite.book.id}) }}" class="btn btn-warning btn-sm">Retirer</a>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <h2>Mes avis</h2>
+    {% for review in user.reviews %}
+        <div class="card mb-2">
+            <div class="card-body">
+                <h5 class="card-title">{{ review.book.title }}</h5>
+                <p>Note: {{ review.rating }}/5</p>
+                <p>{{ review.comment }}</p>
+            </div>
+        </div>
+    {% endfor %}
+{% endblock %}

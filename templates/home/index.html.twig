@@ -1,0 +1,15 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}BiblioConnect - Bibliothèque en ligne{% endblock %}
+
+{% block body %}
+<div class="jumbotron">
+    <h1 class="display-4">Bienvenue sur BiblioConnect</h1>
+    <p class="lead">Votre plateforme de gestion de bibliothèque en ligne.</p>
+    {% if not app.user %}
+        <a class="btn btn-primary btn-lg" href="{{ path('app_register') }}">S'inscrire</a>
+        <a class="btn btn-secondary btn-lg" href="{{ path('app_login') }}">Se connecter</a>
+    {% endif %}
+    <a class="btn btn-info btn-lg" href="{{ path('app_book_index') }}">Voir les livres</a>
+</div>
+{% endblock %}

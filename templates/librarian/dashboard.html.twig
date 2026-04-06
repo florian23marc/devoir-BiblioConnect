@@ -1,0 +1,115 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Espace bibliothécaire{% endblock %}
+
+{% block body %}
+    <h1>Espace bibliothécaire</h1>
+
+    <div class="row mb-4">
+        <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6 mb-3">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Livres totaux</h5>
+                    <p class="card-text display-4">{{ totalBooks }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6 mb-3">
+            <div class="card text-center bg-warning h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Stock faible</h5>
+                    <p class="card-text display-4">{{ lowStockBooks|length }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6 mb-3">
+            <div class="card text-center bg-info h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Réservations en attente</h5>
+                    <p class="card-text display-4">{{ pendingReservations }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6 mb-3">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Utilisateurs</h5>
+                    <p class="card-text display-4">{{ users|length }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6 mb-3">
+            <div class="card text-center bg-success h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Livres empruntés</h5>
+                    <p class="card-text display-4">{{ activeReservations }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <a href="{{ path('app_book_new') }}" class="btn btn-success mb-3">Ajouter un livre</a>
+    <a href="{{ path('app_book_index') }}" class="btn btn-primary mb-3">Gérer les livres</a>
+
+    <h2>Historique des réservations</h2>
+    <div class="table-responsive">
+        <table class="table table-striped align-middle">
+            <thead>
+                <tr>
+                    <th>Livre</th>
+                    <th>Utilisateur</th>
+                    <th>Statut</th>
+                    <th>Date de réservation</th>
+                    <th>Début</th>
+                    <th>Retour prévu</th>
+                    <th>Retour réel</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for reservation in reservations %}
+                    <tr class="{% if reservation.status == 'active' and reservation.dueDate and date('now') > reservation.dueDate %}table-danger{% endif %}">
+                        <td>{{ reservation.book.title }}</td>
+                        <td>{{ reservation.user.firstName }} {{ reservation.user.lastName }}</td>
+                        <td>
+                            {% if reservation.status == 'pending' %}
+                                <span class="badge bg-warning">En attente</span>
+                            {% elseif reservation.status == 'active' %}
+                                <span class="badge bg-success">Actif</span>
+                            {% elseif reservation.status == 'returned' %}
+                                <span class="badge bg-info">Retourné</span>
+                            {% elseif reservation.status == 'rejected' %}
+                                <span class="badge bg-danger">Rejeté</span>
+                            {% else %}
+                                <span class="badge bg-secondary">{{ reservation.status }}</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ reservation.reservedAt|date('d/m/Y') }}</td>
+                        <td>{% if reservation.startDate %}{{ reservation.startDate|date('d/m/Y H:i') }}{% else %}-{% endif %}</td>
+                        <td>{% if reservation.dueDate %}{{ reservation.dueDate|date('d/m/Y H:i') }}{% else %}-{% endif %}</td>
+                        <td>{% if reservation.endDate %}{{ reservation.endDate|date('d/m/Y H:i') }}{% else %}-{% endif %}</td>
+                        <td>
+                            {% if reservation.status == 'pending' %}
+                                <form method="post" action="{{ path('app_admin_reservation_approve', {'id': reservation.id}) }}" style="display: inline;">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('approve' ~ reservation.id) }}">
+                                    <button class="btn btn-success btn-sm">Approuver</button>
+                                </form>
+                                <form method="post" action="{{ path('app_admin_reservation_reject', {'id': reservation.id}) }}" style="display: inline;">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('reject' ~ reservation.id) }}">
+                                    <button class="btn btn-danger btn-sm">Rejeter</button>
+                                </form>
+                            {% elseif reservation.status == 'active' %}
+                                <form method="post" action="{{ path('app_admin_reservation_return', {'id': reservation.id}) }}" style="display: inline;">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('return' ~ reservation.id) }}">
+                                    <button class="btn btn-warning btn-sm">Retourner</button>
+                                </form>
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}
