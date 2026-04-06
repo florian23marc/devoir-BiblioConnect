@@ -10,6 +10,7 @@ use App\Entity\Category;
 use App\Entity\Book;
 use App\Entity\Reservation;
 use App\Entity\Review;
+use App\Entity\Favorite;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 class AppFixtures extends Fixture
@@ -24,170 +25,247 @@ class AppFixtures extends Fixture
         $admin = new User();
         $admin->setEmail('admin@example.com');
         $admin->setFirstName('Admin');
-        $admin->setLastName('User');
+        $admin->setLastName('Admin');
         $admin->setRoles(['ROLE_ADMIN']);
         $admin->setPassword($this->passwordHasher->hashPassword($admin, 'admin123'));
         $manager->persist($admin);
 
         $librarian = new User();
         $librarian->setEmail('librarian@example.com');
-        $librarian->setFirstName('Librarian');
-        $librarian->setLastName('User');
+        $librarian->setFirstName('Bibliothécaire');
+        $librarian->setLastName('Bibliothécaire');
         $librarian->setRoles(['ROLE_LIBRARIAN']);
         $librarian->setPassword($this->passwordHasher->hashPassword($librarian, 'librarian123'));
         $manager->persist($librarian);
 
-        $user1 = new User();
-        $user1->setEmail('user@example.com');
-        $user1->setFirstName('John');
-        $user1->setLastName('Doe');
-        $user1->setRoles(['ROLE_USER']);
-        $user1->setPassword($this->passwordHasher->hashPassword($user1, 'user123'));
-        $manager->persist($user1);
-
-        $user2 = new User();
-        $user2->setEmail('marie@example.com');
-        $user2->setFirstName('Marie');
-        $user2->setLastName('Smith');
-        $user2->setRoles(['ROLE_USER']);
-        $user2->setPassword($this->passwordHasher->hashPassword($user2, 'user123'));
-        $manager->persist($user2);
+        $user = new User();
+        $user->setEmail('user@example.com');
+        $user->setFirstName('Usager');
+        $user->setLastName('Simple');
+        $user->setRoles([]);
+        $user->setPassword($this->passwordHasher->hashPassword($user, 'user123'));
+        $manager->persist($user);
 
         // ========== LANGUAGES ==========
-        $english = new Language();
-        $english->setName('English');
-        $manager->persist($english);
-
-        $french = new Language();
-        $french->setName('French');
-        $manager->persist($french);
-
-        $spanish = new Language();
-        $spanish->setName('Spanish');
-        $manager->persist($spanish);
+        $languages = [];
+        $languageNames = ['French', 'English', 'Italian', 'Portuguese', 'Spanish', 'Arabic', 'Russian', 'Chinese'];
+        foreach ($languageNames as $name) {
+            $language = new Language();
+            $language->setName($name);
+            $manager->persist($language);
+            $languages[$name] = $language;
+        }
 
         // ========== CATEGORIES ==========
-        $fiction = new Category();
-        $fiction->setName('Fiction');
-        $manager->persist($fiction);
-
-        $sciFi = new Category();
-        $sciFi->setName('Science-Fiction');
-        $manager->persist($sciFi);
-
-        $fantasy = new Category();
-        $fantasy->setName('Fantasy');
-        $manager->persist($fantasy);
-
-        $mystery = new Category();
-        $mystery->setName('Mystère');
-        $manager->persist($mystery);
-
-        $romance = new Category();
-        $romance->setName('Romance');
-        $manager->persist($romance);
+        $categories = [];
+        $categoryNames = ['Fiction', 'Non-fiction', 'Science Fiction', 'Fantasy', 'Mystery', 'Romance', 'Thriller', 'Biography', 'History', 'Science', 'Self-help', 'Poetry', 'Children', 'Young Adult', 'Comics'];
+        foreach ($categoryNames as $name) {
+            $category = new Category();
+            $category->setName($name);
+            $manager->persist($category);
+            $categories[$name] = $category;
+        }
 
         // ========== BOOKS ==========
-        $book1 = new Book();
-        $book1->setTitle('The Great Gatsby');
-        $book1->setAuthor('F. Scott Fitzgerald');
-        $book1->setDescription('A classic American novel about wealth and love');
-        $book1->setStock(5);
-        $book1->setLanguage($english);
-        $book1->setCreatedAt(new \DateTime());
-        $book1->addCategory($fiction);
-        $manager->persist($book1);
+        $booksData = [
+            [
+                'title' => 'test 1',
+                'author' => 'flo',
+                'description' => 'des',
+                'stock' => 3,
+                'image' => 'Crche_Provencale_2-69d10d607f211.JPG',
+                'language' => 'French',
+                'categories' => ['Fiction']
+            ],
+            [
+                'title' => 'Le Petit Prince',
+                'author' => 'Antoine de Saint-Exupéry',
+                'description' => 'Un aviateur échoué dans le désert rencontre un petit prince venu d\'une autre planète. À travers leurs échanges, une réflexion poétique sur l\'amitié, l\'amour et le sens de la vie.',
+                'stock' => 4,
+                'image' => '71IF1ngy57L_AC_UF10001000_QL80_-69d3a9799b1b4.jpg',
+                'language' => 'French',
+                'categories' => ['Fiction']
+            ],
+            [
+                'title' => '1984',
+                'author' => 'George Orwell',
+                'description' => 'Dans une société totalitaire où le Grand Frère surveille tout, Winston Smith travaille pour le Ministère de la Vérité et rêve en secret de liberté et de rébellion.',
+                'stock' => 2,
+                'image' => '33368130_1984-69d3aa1237bfb.jpg',
+                'language' => 'English',
+                'categories' => ['Fiction']
+            ],
+            [
+                'title' => 'Harry Potter à l\'école des sorciers',
+                'author' => 'J.K. Rowling',
+                'description' => 'Harry Potter, jeune orphelin vivant chez ses oncle et tante, découvre qu\'il est un sorcier et rejoint l\'école de magie Poudlard où il fera face à de nombreux dangers.',
+                'stock' => 3,
+                'image' => 'CouvertureItalie2021HP1-69d3aae2641db.webp',
+                'language' => 'Italian',
+                'categories' => ['Fantasy']
+            ],
+            [
+                'title' => 'Le Seigneur des Anneaux',
+                'author' => 'J.R.R. Tolkien',
+                'description' => 'Frodon Sacquet, un hobbit, doit traverser la Terre du Milieu pour détruire l\'Anneau unique dans les feux du Mont Destin et sauver le monde du Seigneur des Ténèbres Sauron.',
+                'stock' => 3,
+                'image' => 'Capturedcran20260406144716-69d3ab76930a1.png',
+                'language' => 'Spanish',
+                'categories' => ['Fantasy']
+            ],
+            [
+                'title' => 'L\'Étranger',
+                'author' => 'Albert Camus',
+                'description' => 'Meursault, un homme totalement indifférent au monde qui l\'entoure, commet un meurtre absurde sur une plage algérienne et fait face à la justice et à la condamnation de la société.',
+                'stock' => 4,
+                'image' => 'Ltranger__Albert_Camus-69d3ac10a1ace.jpg',
+                'language' => 'French',
+                'categories' => ['Fiction']
+            ],
+            [
+                'title' => 'Dune',
+                'author' => 'Frank Herbert',
+                'description' => 'Un classique de la science-fiction',
+                'stock' => 4,
+                'image' => '7_9782221255728_1_75-69d3af1f481f9.jpg',
+                'language' => 'English',
+                'categories' => ['Science Fiction']
+            ],
+        ];
 
-        $book2 = new Book();
-        $book2->setTitle('1984');
-        $book2->setAuthor('George Orwell');
-        $book2->setDescription('A dystopian novel about totalitarianism');
-        $book2->setStock(3);
-        $book2->setLanguage($english);
-        $book2->setCreatedAt(new \DateTime());
-        $book2->addCategory($fiction);
-        $manager->persist($book2);
+        $books = [];
+        foreach ($booksData as $data) {
+            $book = new Book();
+            $book->setTitle($data['title']);
+            $book->setAuthor($data['author']);
+            $book->setDescription($data['description']);
+            $book->setStock($data['stock']);
+            $book->setImage($data['image']);
+            $book->setLanguage($languages[$data['language']]);
+            $book->setCreatedAt(new \DateTime());
 
-        $book3 = new Book();
-        $book3->setTitle('Le Seigneur des Anneaux');
-        $book3->setAuthor('J.R.R. Tolkien');
-        $book3->setDescription('Une épopée fantastique épique');
-        $book3->setStock(4);
-        $book3->setLanguage($french);
-        $book3->setCreatedAt(new \DateTime());
-        $book3->addCategory($fantasy);
-        $manager->persist($book3);
+            foreach ($data['categories'] as $categoryName) {
+                $book->addCategory($categories[$categoryName]);
+            }
 
-        $book4 = new Book();
-        $book4->setTitle('Dune');
-        $book4->setAuthor('Frank Herbert');
-        $book4->setDescription('An epic science fiction novel');
-        $book4->setStock(2);
-        $book4->setLanguage($english);
-        $book4->setCreatedAt(new \DateTime());
-        $book4->addCategory($sciFi);
-        $manager->persist($book4);
-
-        $book5 = new Book();
-        $book5->setTitle('Le Petit Prince');
-        $book5->setAuthor('Antoine de Saint-Exupéry');
-        $book5->setDescription('Un conte poétique et philosophique');
-        $book5->setStock(8);
-        $book5->setLanguage($french);
-        $book5->setCreatedAt(new \DateTime());
-        $book5->addCategory($fiction);
-        $manager->persist($book5);
+            $manager->persist($book);
+            $books[] = $book;
+        }
 
         // ========== RESERVATIONS ==========
-        $reservation1 = new Reservation();
-        $reservation1->setUser($user1);
-        $reservation1->setBook($book1);
-        $reservation1->setReservedAt(new \DateTime());
-        $reservation1->setStatus('pending');
-        $manager->persist($reservation1);
+        $reservationsData = [
+            [
+                'user_id' => 1,
+                'book_id' => 0,
+                'reserved_at' => '2026-04-06 13:04:02',
+                'due_date' => '2026-04-17 15:03:00',
+                'start_date' => '2026-04-07 15:03:00',
+                'end_date' => '2026-04-14 15:03:00',
+                'status' => 'cancelled'
+            ],
+            [
+                'user_id' => 1,
+                'book_id' => 3,
+                'reserved_at' => '2026-04-06 13:05:55',
+                'due_date' => '2026-04-02 15:05:00',
+                'start_date' => '2026-04-07 15:05:00',
+                'end_date' => '2026-04-06 13:36:29',
+                'status' => 'returned'
+            ],
+            [
+                'user_id' => 1,
+                'book_id' => 1,
+                'reserved_at' => '2026-04-06 13:16:26',
+                'due_date' => '2026-04-20 13:16:00',
+                'start_date' => '2026-04-06 14:16:00',
+                'end_date' => '2026-04-06 13:36:35',
+                'status' => 'returned'
+            ],
+            [
+                'user_id' => 2,
+                'book_id' => 4,
+                'reserved_at' => '2026-04-06 13:39:57',
+                'due_date' => '2026-04-20 13:39:00',
+                'start_date' => '2026-04-06 13:54:24',
+                'end_date' => '2026-04-13 13:39:00',
+                'status' => 'active'
+            ],
+            [
+                'user_id' => 2,
+                'book_id' => 5,
+                'reserved_at' => '2026-04-06 13:58:16',
+                'due_date' => '2026-04-20 13:58:00',
+                'start_date' => '2026-04-06 13:58:50',
+                'end_date' => '2026-04-13 13:58:00',
+                'status' => 'active'
+            ],
+            [
+                'user_id' => 3,
+                'book_id' => 2,
+                'reserved_at' => '2026-04-06 14:05:37',
+                'due_date' => '2026-04-20 14:05:00',
+                'start_date' => '2026-04-06 14:53:35',
+                'end_date' => '2026-04-13 14:05:00',
+                'status' => 'active'
+            ],
+            [
+                'user_id' => 2,
+                'book_id' => 6,
+                'reserved_at' => '2026-04-06 14:56:54',
+                'due_date' => '2026-04-16 14:56:54',
+                'start_date' => '2026-04-07 14:56:54',
+                'end_date' => '2026-04-14 14:56:54',
+                'status' => 'pending'
+            ]
+        ];
 
-        $reservation2 = new Reservation();
-        $reservation2->setUser($user2);
-        $reservation2->setBook($book3);
-        $reservation2->setReservedAt(new \DateTime('-5 days'));
-        $reservation2->setStatus('active');
-        $reservation2->setStartDate(new \DateTime('-4 days'));
-        $reservation2->setDueDate(new \DateTime('+10 days'));
-        $manager->persist($reservation2);
+        $userReferences = [$admin, $librarian, $user];
 
-        $reservation3 = new Reservation();
-        $reservation3->setUser($librarian);
-        $reservation3->setBook($book5);
-        $reservation3->setReservedAt(new \DateTime('-20 days'));
-        $reservation3->setStatus('returned');
-        $reservation3->setStartDate(new \DateTime('-20 days'));
-        $reservation3->setEndDate(new \DateTime('-2 days'));
-        $manager->persist($reservation3);
+        foreach ($reservationsData as $data) {
+            $reservation = new Reservation();
+            $reservation->setUser($userReferences[$data['user_id'] - 1]);
+            $reservation->setBook($books[$data['book_id']]);
+            $reservation->setReservedAt(new \DateTime($data['reserved_at']));
+            $reservation->setDueDate(new \DateTime($data['due_date']));
+            $reservation->setStartDate(new \DateTime($data['start_date']));
+            $reservation->setEndDate(new \DateTime($data['end_date']));
+            $reservation->setStatus($data['status']);
+            $manager->persist($reservation);
+        }
 
         // ========== REVIEWS ==========
-        $review1 = new Review();
-        $review1->setUser($user1);
-        $review1->setBook($book1);
-        $review1->setRating(5);
-        $review1->setComment('Amazing book! Highly recommended.');
-        $review1->setCreatedAt(new \DateTime('-10 days'));
-        $manager->persist($review1);
+        $reviewsData = [
+            ['user_id' => 1, 'book_id' => 0, 'rating' => 4, 'comment' => 'dadada', 'created_at' => '2026-04-04 13:08:48'],
+            ['user_id' => 1, 'book_id' => 3, 'rating' => 5, 'comment' => 'super livre', 'created_at' => '2026-04-06 13:05:20'],
+            ['user_id' => 2, 'book_id' => 1, 'rating' => 5, 'comment' => 'Beau livre', 'created_at' => '2026-04-06 13:40:43'],
+            ['user_id' => 2, 'book_id' => 0, 'rating' => 4, 'comment' => 'test', 'created_at' => '2026-04-06 14:02:39'],
+            ['user_id' => 3, 'book_id' => 6, 'rating' => 5, 'comment' => 'tres bon livre', 'created_at' => '2026-04-06 14:06:39'],
+            ['user_id' => 3, 'book_id' => 3, 'rating' => 3, 'comment' => 'livre moyen', 'created_at' => '2026-04-06 14:13:17']
+        ];
 
-        $review2 = new Review();
-        $review2->setUser($user2);
-        $review2->setBook($book3);
-        $review2->setRating(4);
-        $review2->setComment('A classic tale with wonderful descriptions.');
-        $review2->setCreatedAt(new \DateTime('-5 days'));
-        $manager->persist($review2);
+        foreach ($reviewsData as $data) {
+            $review = new Review();
+            $review->setUser($userReferences[$data['user_id'] - 1]);
+            $review->setBook($books[$data['book_id']]);
+            $review->setRating($data['rating']);
+            $review->setComment($data['comment']);
+            $review->setCreatedAt(new \DateTime($data['created_at']));
+            $manager->persist($review);
+        }
 
-        $review3 = new Review();
-        $review3->setUser($librarian);
-        $review3->setBook($book5);
-        $review3->setRating(5);
-        $review3->setComment('A beautiful and touching story for all ages.');
-        $review3->setCreatedAt(new \DateTime('-3 days'));
-        $manager->persist($review3);
+        // ========== FAVORITES ==========
+        $favoritesData = [
+            ['user_id' => 1, 'book_id' => 6],
+            ['user_id' => 2, 'book_id' => 6],
+            ['user_id' => 3, 'book_id' => 6]
+        ];
+
+        foreach ($favoritesData as $data) {
+            $favorite = new Favorite();
+            $favorite->setUser($userReferences[$data['user_id'] - 1]);
+            $favorite->setBook($books[$data['book_id']]);
+            $manager->persist($favorite);
+        }
 
         $manager->flush();
     }
